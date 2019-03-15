@@ -22,10 +22,7 @@ var Failure = /** @class */ (function () {
     function Failure(error) {
         this.error = error;
         this.isError = true;
-        this.result = {
-            isError: true,
-            error: error
-        };
+        this.error = error;
     }
     Failure.prototype.map = function (_) {
         // tslint:disable-next-line:no-any
@@ -43,6 +40,7 @@ var Failure = /** @class */ (function () {
     };
     return Failure;
 }());
+exports.Failure = Failure;
 /**
  * Type that represents a success result.  This is not
  * a part of the exported API and isn't actually exported
@@ -52,10 +50,7 @@ var Success = /** @class */ (function () {
     function Success(value) {
         this.value = value;
         this.isError = false;
-        this.result = {
-            isError: false,
-            value: value
-        };
+        this.value = value;
     }
     Success.prototype.isFailure = function () {
         return false;
@@ -78,6 +73,7 @@ var Success = /** @class */ (function () {
     };
     return Success;
 }());
+exports.Success = Success;
 /**
  * Async version of failable that takes a computation that
  * returns a Promise<Failable<T, E>>. It can be combined with
@@ -210,24 +206,31 @@ function mapMultiple(arr, f) {
     for (var _i = 0, arr_1 = arr; _i < arr_1.length; _i++) {
         var item = arr_1[_i];
         var fail = f(item);
-        if (fail.result.isError) {
-            // since there's no way to get a value from a failure,
-            // we can just typecast the current failure and return it.
-            // tslint:disable:no-any
-            return fail;
+        // since there's no way to get a value from a failure,
+        // we can just typecast the current failure and return it.
+        if (fail.isError) {
+            // tslint:disable-next-line
+            return fail.error;
         }
         else {
-            result.push(fail.result.value);
+            // tslint:disable-next-line
+            result.push(fail.value);
         }
     }
     return success(result);
 }
 exports.mapMultiple = mapMultiple;
 exports.mapM = mapMultiple;
-function isFailableException(e) {
-    return e instanceof Failure;
+// tslint:disable-next-line
+function isSuccess(value) {
+    return value instanceof Success;
 }
-exports.isFailableException = isFailableException;
+exports.isSuccess = isSuccess;
+// tslint:disable-next-line
+function isFailure(value) {
+    return value instanceof Failure;
+}
+exports.isFailure = isFailure;
 /**
  * Object containing static functions for {@link IFailable}.
  * Anything that isn't an instance method should be added here.
@@ -238,6 +241,7 @@ exports.Failable = {
     failure: failure,
     mapM: mapMultiple,
     mapMultiple: mapMultiple,
-    isFailableException: isFailableException
+    isSuccess: isSuccess,
+    isFailure: isFailure
 };
 //# sourceMappingURL=failable.js.map

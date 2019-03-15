@@ -43,81 +43,80 @@
  * they would be converted to `T | null` by `.valueOf`.
  */
 export type IOptional<T> =
-  {
-    /**
-     * This is a phantom type parameter that ensures
-     * that objects created outside this module are
-     * not assignable to IOptional<T>.
-     * This has no runtime significance
-     * Optional.of uses a type cast to make an
-     * {@link IOptional}
-     */
-    ___ts_failable_optional___: never;
-    valueOf(): NonNullable<T> | null;
-  } &
-  T extends string | number | boolean | symbol
-    ? {
-      ___ts_failable_optional___: never;
-      valueOf(): NonNullable<T> | null;
-    }
-    : {
-      [K in keyof T]-?:
-        IOptional<T[K]>
-    };
+	{
+		/**
+		 * This is a phantom type parameter that ensures
+		 * that objects created outside this module are
+		 * not assignable to IOptional<T>.
+		 * This has no runtime significance
+		 * Optional.of uses a type cast to make an
+		 * {@link IOptional}
+		 */
+		___ts_failable_optional___: never;
+		valueOf(): NonNullable<T> | null;
+	} &
+	T extends string | number | boolean | symbol
+		? {
+			___ts_failable_optional___: never;
+			valueOf(): NonNullable<T> | null;
+		}
+		: {
+			[K in keyof T]-?:
+				IOptional<T[K]>
+		};
 
 // tslint:disable:no-reserved-keywords
 const VALUE_OF = "valueOf";
 // tslint:disable-next-line:no-any
 const nullProxy: any = new Proxy({}, {
-  get(_, key: string) {
-    if (key === VALUE_OF) {
-      return () => null;
-    }
+	get(_, key: string) {
+		if (key === VALUE_OF) {
+			return () => null;
+		}
 
-    return nullProxy;
-  }
+		return nullProxy;
+	}
 });
 
 const optionalProxyHandler = {
 
-  // tslint:disable-next-line:no-any
-  get(self: any, prop: string) {
+	// tslint:disable-next-line:no-any
+	get(self: any, prop: string) {
 
-    if (prop === VALUE_OF) {
-      // tslint:disable-next-line:no-unsafe-any
-      return self[prop];
-    }
+		if (prop === VALUE_OF) {
+			// tslint:disable-next-line:no-unsafe-any
+			return self[prop];
+		}
 
-    // tslint:disable-next-line:no-unsafe-any
-    const value = self[prop];
-    if (value === null || value === undefined) {
-      return nullProxy;
-    } else {
-      return makeOptional(value);
-    }
-  }
+		// tslint:disable-next-line:no-unsafe-any
+		const value = self[prop];
+		if (value === null || value === undefined) {
+			return nullProxy;
+		} else {
+			return makeOptional(value);
+		}
+	}
 };
 // tslint:enable:no-reserved-keywords
 
 function makeOptional<T>(x: T): IOptional<T> {
-  if (x === null || x === undefined) {
-    // tslint:disable-next-line:no-unsafe-any
-    return nullProxy;
-  }
-  if (typeof x === "object") {
-    // @ts-ignore
-    const proxy = new Proxy(x, optionalProxyHandler);
-
-    // tslint:disable-next-line:no-any
-    return <any>proxy;
-  } else {
-    return x;
-  }
+	if (x === null || x === undefined) {
+		// tslint:disable-next-line:no-unsafe-any
+		return nullProxy;
+	}
+	if (typeof x === "object") {
+		// @ts-ignore
+		// tslint:disable-next-line
+		return new Proxy(x, optionalProxyHandler);
+	} else {
+		// tslint:disable-next-line
+		return x as any;
+	}
 }
 
 export const Optional = {
-  // tslint:disable:no-reserved-keywords
-  of<T>(t: T) {
-    return makeOptional(t);
-  }
+	// tslint:disable:no-reserved-keywords
+	of<T>(t: T) {
+		return makeOptional(t);
+	}
 };

@@ -4,26 +4,6 @@
  */
 export interface IFailable<Result, Error> {
     /**
-     * Return an object containing the result of
-     * the computation from which the value or error
-     * can be extracted using .isError check.
-     * Useful as an alternative to .match
-     *
-     * @example
-     * ```
-     *
-     * const failable: IFailable<number, string> = ...;
-     * if (failable.result.isError) {
-     *   // .error can be accessed inside this block
-     *   console.log(failable.result.error);
-     * } else {
-     *   // .value can be accessed inside this block
-     *   console.log(failable.result.value);
-     * }
-     * ```
-     */
-    readonly result: IFailableResult<Result, Error>;
-    /**
      * Transform an {@link IFailable}<R, E> into an {@link IFailable}<R2, E>
      * by applying the given function to the result value in
      * case of success. Has no effect in case this is a failure.
@@ -36,7 +16,7 @@ export interface IFailable<Result, Error> {
      * const parsed: Failable<number, string> = numStr.map(parseInt); // or numStr.map(s => parseInt(s))
      * ```
      */
-    map<R2>(f: (r: Result) => R2): IFailable<R2, Error>;
+    map<R2>(f: (r: Result) => R2): IFailableResult<R2, Error>;
     /**
      * Transform the error value of an {@link IFailable} using the
      * given function. Has no effect if the {@link IFailable} was
@@ -50,7 +30,7 @@ export interface IFailable<Result, Error> {
      * const withErrorCode: Failable<number, number> = result.mapError(getErrorCode)
      * ```
      */
-    mapError<E2>(f: (e: Error) => E2): IFailable<Result, E2>;
+    mapError<E2>(f: (e: Error) => E2): IFailableResult<Result, E2>;
     /**
      * Pattern match over this IFailable by supplying
      * a success and failure functions. Both cases
@@ -96,20 +76,22 @@ export interface IFailable<Result, Error> {
      * const result: Failable<string, ERROR> = computation1().flatMap(x => computation2(x))
      * ```
      */
-    flatMap<R2, E2 extends Error = Error>(f: (r: Result) => IFailable<R2, E2>): IFailable<R2, Error | E2>;
+    flatMap<R2, E2 extends Error = Error>(f: (r: Result) => IFailableResult<R2, E2>): IFailableResult<R2, Error | E2>;
 }
 /**
- * Discriminated union for an {@link IFailable} result.
- * value or error can be extracted from it using an
- * `if (r.isError)` check
+ * Type that represents a failure result. This is not
+ * a part of the exported API and isn't actually exported
+ * directly. Depend on {@link IFailable} instead.
  */
-export declare type IFailableResult<T, E> = {
-    readonly isError: true;
+export declare class Failure<R, E> implements IFailable<R, E> {
     readonly error: E;
-} | {
-    readonly isError: false;
-    readonly value: T;
-};
+    readonly isError: true;
+    constructor(error: E);
+    map<R2>(_: (r: R) => R2): IFailableResult<R2, E>;
+    mapError<E2>(func: (e: E) => E2): Failure<R, E2>;
+    flatMap<R2, E2 extends E = E>(_: (r: R) => IFailableResult<R2, E2>): IFailableResult<R2, E2>;
+    match<T>(cases: IFailableMatchCase<T, R, E>): T;
+}
 /**
  * Argument type of .match method on an {@link IFailbale}.
  * It takes an object containing two callbacks; One for
@@ -129,13 +111,29 @@ export interface IFailableMatchCase<T, R, E> {
      */
     success(v: R): T;
 }
-export declare type FailablePromise<T, E> = Promise<IFailable<T, E>>;
+/**
+ * Type that represents a success result.  This is not
+ * a part of the exported API and isn't actually exported
+ * directly. Depend on {@link IFailable} instead.
+ */
+export declare class Success<R, E> implements IFailable<R, E> {
+    readonly value: R;
+    readonly isError: false;
+    constructor(value: R);
+    isFailure(): boolean;
+    map<R2>(func: (r: R) => R2): IFailableResult<R2, E>;
+    flatMap<R2, E2 extends E = E>(func: (r: R) => IFailableResult<R2, E2>): IFailableResult<R2, E2>;
+    mapError<E2>(_: (r: E) => E2): IFailableResult<R, E2>;
+    match<T>(cases: IFailableMatchCase<T, R, E>): T;
+}
+export declare type IFailableResult<R, E> = Success<R, E> | Failure<R, E>;
+export declare type FailablePromise<T, E> = Promise<IFailableResult<T, E>>;
 export declare type FailableAsyncFunctionParams<T, E> = {
-    success(value: T): Promise<IFailable<T, E>>;
-    failure(error: E): Promise<IFailable<T, E>>;
-    run<R>(f: IFailable<R, E>): R;
+    success(value: T): Promise<IFailableResult<T, E>>;
+    failure(error: E): Promise<IFailableResult<T, E>>;
+    run<R>(f: IFailableResult<R, E>): R;
 };
-export declare type FailableAsyncArg<T, E> = ((arg: FailableAsyncFunctionParams<T, E>) => Promise<IFailable<T, E>>);
+export declare type FailableAsyncArg<T, E> = ((arg: FailableAsyncFunctionParams<T, E>) => Promise<IFailableResult<T, E>>);
 /**
  * Async version of failable that takes a computation that
  * returns a Promise<Failable<T, E>>. It can be combined with
@@ -161,17 +159,17 @@ export declare type FailableAsyncArg<T, E> = ((arg: FailableAsyncFunctionParams<
  * })
  * ```
  */
-export declare function failableAsync<T, E>(f: FailableAsyncArg<T, E>): Promise<IFailable<T, E>>;
+export declare function failableAsync<T, E>(f: FailableAsyncArg<T, E>): Promise<IFailableResult<T, E>>;
 export declare type FailableArgParams<T, E> = {
     /**
      * Make IFailable<T, E> from a T
      * @param value
      */
-    success(value: T): IFailable<T, E>;
-    failure(error: E): IFailable<T, E>;
-    run<R>(f: IFailable<R, E>): R;
+    success(value: T): IFailableResult<T, E>;
+    failure(error: E): IFailableResult<T, E>;
+    run<R>(f: IFailableResult<R, E>): R;
 };
-export declare type FailableArg<T, E> = ((arg: FailableArgParams<T, E>) => IFailable<T, E>);
+export declare type FailableArg<T, E> = ((arg: FailableArgParams<T, E>) => IFailableResult<T, E>);
 /**
  * Creates a failable comutation from a function.
  * The supplied function receives an object containing
@@ -197,17 +195,17 @@ export declare type FailableArg<T, E> = ((arg: FailableArgParams<T, E>) => IFail
  * })
  * ```
  */
-export declare function failable<T, E>(f: FailableArg<T, E>): IFailable<T, E>;
+export declare function failable<T, E>(f: FailableArg<T, E>): IFailableResult<T, E>;
 /**
  * Create an error {@link IFailable} value.
  * @param err Error value
  */
-export declare function failure<T, E>(err: E): IFailable<T, E>;
+export declare function failure<T, E>(err: E): IFailableResult<T, E>;
 /**
  * Create a successful {@link IFailable} value
  * @param value Result value
  */
-export declare function success<T, E>(value: T): IFailable<T, E>;
+export declare function success<T, E>(value: T): IFailableResult<T, E>;
 /**
  * Helper type for an async function that
  * takes Req and returns a {@link FailablePromise}<Res, Err>.
@@ -222,9 +220,10 @@ export declare type AsyncFunction<Req, Res, Err> = (req: Req) => FailablePromise
  * @returns A failable containing an array of U values wrapped inside
  * an {@link IFailable}
  */
-export declare function mapMultiple<T, U, E>(arr: ReadonlyArray<T>, f: (t: T) => IFailable<U, E>): IFailable<U[], E>;
+export declare function mapMultiple<T, U, E>(arr: ReadonlyArray<T>, f: (t: T) => IFailableResult<U, E>): IFailableResult<U[], E>;
 export declare const mapM: typeof mapMultiple;
-export declare function isFailableException<T>(e: T): boolean;
+export declare function isSuccess(value: any): value is Success<any, any>;
+export declare function isFailure(value: any): value is Failure<any, any>;
 /**
  * Object containing static functions for {@link IFailable}.
  * Anything that isn't an instance method should be added here.
@@ -235,5 +234,6 @@ export declare const Failable: {
     failure: typeof failure;
     mapM: typeof mapMultiple;
     mapMultiple: typeof mapMultiple;
-    isFailableException: typeof isFailableException;
+    isSuccess: typeof isSuccess;
+    isFailure: typeof isFailure;
 };

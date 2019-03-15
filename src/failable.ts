@@ -100,10 +100,10 @@ class ErrorValue<T> {
  * a part of the exported API and isn't actually exported
  * directly. Depend on {@link IFailable} instead.
  */
-class Failure<R, E> implements IFailable<R, E> {
-	public readonly isError: true = true
+export class Failure<R, E> implements IFailable<R, E> {
+	public readonly isError: true = true;
 	constructor(public readonly error: E) {
-		this.error = error
+		this.error = error;
 	}
 
 	public map<R2>(_: (r: R) => R2): IFailableResult<R2, E> {
@@ -151,10 +151,10 @@ export interface IFailableMatchCase<T, R, E> {
  * a part of the exported API and isn't actually exported
  * directly. Depend on {@link IFailable} instead.
  */
-class Success<R, E> implements IFailable<R, E> {
+export class Success<R, E> implements IFailable<R, E> {
 	public readonly isError: false = false;
 	constructor(public readonly value: R) {
-		this.value = value
+		this.value = value;
 	}
 
 	public isFailure() {
@@ -182,7 +182,7 @@ class Success<R, E> implements IFailable<R, E> {
 	}
 }
 
-export type IFailableResult<R, E> = Success<R, E> | Failure<R, E>
+export type IFailableResult<R, E> = Success<R, E> | Failure<R, E>;
 
 export type FailablePromise<T, E> = Promise<IFailableResult<T, E>>;
 
@@ -239,7 +239,7 @@ export function failableAsync<T, E>(
 	})
 	.catch(e => {
 		if (e instanceof ErrorValue) {
-			return Promise.resolve(new Failure(e.value) as Failure<T, E>);
+			return Promise.resolve(<Failure<T, E>>new Failure(e.value));
 		} else {
 			return Promise.reject(e);
 		}
@@ -349,12 +349,13 @@ export function mapMultiple<T, U, E>(arr: ReadonlyArray<T>, f: (t: T) => IFailab
 	const result: U[] = [];
 	for (const item of arr) {
 		const fail = f(item);
+		// since there's no way to get a value from a failure,
+		// we can just typecast the current failure and return it.
 		if (fail.isError) {
-			// since there's no way to get a value from a failure,
-			// we can just typecast the current failure and return it.
-			// tslint:disable:no-any
+			// tslint:disable-next-line
 			return (<any>fail).error;
 		} else {
+			// tslint:disable-next-line
 			result.push((<any>fail).value);
 		}
 	}
@@ -364,16 +365,14 @@ export function mapMultiple<T, U, E>(arr: ReadonlyArray<T>, f: (t: T) => IFailab
 
 export const mapM = mapMultiple;
 
-export function isFailableException<T>(e: T): boolean {
-	return e instanceof Failure;
-}
-
+// tslint:disable-next-line
 export function isSuccess(value: any): value is Success<any, any> {
-	return value instanceof Success
+	return value instanceof Success;
 }
 
+// tslint:disable-next-line
 export function isFailure(value: any): value is Failure<any, any> {
-	return value instanceof Failure
+	return value instanceof Failure;
 }
 
 /**
@@ -386,7 +385,6 @@ export const Failable = {
 	failure,
 	mapM: mapMultiple,
 	mapMultiple,
-	isFailableException,
 	isSuccess,
 	isFailure
 };

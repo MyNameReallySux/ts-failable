@@ -36,11 +36,11 @@ function makeOptional(x) {
     }
     if (typeof x === "object") {
         // @ts-ignore
-        var proxy = new Proxy(x, optionalProxyHandler);
-        // tslint:disable-next-line:no-any
-        return proxy;
+        // tslint:disable-next-line
+        return new Proxy(x, optionalProxyHandler);
     }
     else {
+        // tslint:disable-next-line
         return x;
     }
 }
