@@ -3,119 +3,86 @@
  * over the result type and the error type.
  */
 export interface IFailable<Result, Error> {
-  /**
-   * Return an object containing the result of
-   * the computation from which the value or error
-   * can be extracted using .isError check.
-   * Useful as an alternative to .match
-   *
-   * @example
-   * ```
-   *
-   * const failable: IFailable<number, string> = ...;
-   * if (failable.result.isError) {
-   *   // .error can be accessed inside this block
-   *   console.log(failable.result.error);
-   * } else {
-   *   // .value can be accessed inside this block
-   *   console.log(failable.result.value);
-   * }
-   * ```
-   */
-  result: IFailableResult<Result, Error>;
-  /**
-   * Transform an {@link IFailable}<R, E> into an {@link IFailable}<R2, E>
-   * by applying the given function to the result value in
-   * case of success. Has no effect in case this is a failure.
-   * @param f Function that transforms a success value.
-   *
-   * @example
-   * ```
-   *
-   * const numStr: Failable<string, string> = ...;
-   * const parsed: Failable<number, string> = numStr.map(parseInt); // or numStr.map(s => parseInt(s))
-   * ```
-   */
-  map<R2>(f: (r: Result) => R2): IFailable<R2, Error>;
+	/**
+	 * Transform an {@link IFailable}<R, E> into an {@link IFailable}<R2, E>
+	 * by applying the given function to the result value in
+	 * case of success. Has no effect in case this is a failure.
+	 * @param f Function that transforms a success value.
+	 *
+	 * @example
+	 * ```
+	 *
+	 * const numStr: Failable<string, string> = ...;
+	 * const parsed: Failable<number, string> = numStr.map(parseInt); // or numStr.map(s => parseInt(s))
+	 * ```
+	 */
+	map<R2>(f: (r: Result) => R2): IFailableResult<R2, Error>;
 
-  /**
-   * Transform the error value of an {@link IFailable} using the
-   * given function. Has no effect if the {@link IFailable} was
-   * a success.
-   * @param f Function for transforming the error value
-   *
-   * @example
-   * ```
-   *
-   * const result: Failable<number, string> = ...;
-   * const withErrorCode: Failable<number, number> = result.mapError(getErrorCode)
-   * ```
-   */
-  mapError<E2>(f: (e: Error) => E2): IFailable<Result, E2>;
+	/**
+	 * Transform the error value of an {@link IFailable} using the
+	 * given function. Has no effect if the {@link IFailable} was
+	 * a success.
+	 * @param f Function for transforming the error value
+	 *
+	 * @example
+	 * ```
+	 *
+	 * const result: Failable<number, string> = ...;
+	 * const withErrorCode: Failable<number, number> = result.mapError(getErrorCode)
+	 * ```
+	 */
+	mapError<E2>(f: (e: Error) => E2): IFailableResult<Result, E2>;
 
-  /**
-   * Pattern match over this IFailable by supplying
-   * a success and failure functions. Both cases
-   * must return a value of type T
-   * @param cases Match cases
-   *
-   * @example
-   * ```
-   *
-   * const result: Failable<number, string> = ...;
-   * const num = result.match({
-   *   success: x => x,
-   *   failure: err => {
-   *     console.log(err);
-   *     return 0;
-   *   }
-   * }); // num = x if result was successful, otherwise 0
-   * ```
-   */
-  match<T>(cases: IFailableMatchCase<T, Result, Error>): T;
+	/**
+	 * Pattern match over this IFailable by supplying
+	 * a success and failure functions. Both cases
+	 * must return a value of type T
+	 * @param cases Match cases
+	 *
+	 * @example
+	 * ```
+	 *
+	 * const result: Failable<number, string> = ...;
+	 * const num = result.match({
+	 *   success: x => x,
+	 *   failure: err => {
+	 *     console.log(err);
+	 *     return 0;
+	 *   }
+	 * }); // num = x if result was successful, otherwise 0
+	 * ```
+	 */
+	match<T>(cases: IFailableMatchCase<T, Result, Error>): T;
 
-  /**
-   * Chain another computation to this IFailable that
-   * takes the result value of this IFailable and returns
-   * a new IFailable (possibly of a different type).
-   * The chained computation must be an IFailable whose error
-   * type is a subset of this IFailable's error type.
-   * If not, you can call .mapError on it to convert it's
-   * error into a type compatible with this IFailable.
-   *
-   * This method allows you to chain arbitrary failable computations
-   * dependent on the results of previous ones in the chain that
-   * "short circuit" in case of the first error.
-   *
-   * @param f Function that takes the success value of this
-   * IFailable and returns another IFailable (possibly of another
-   * type)
-   *
-   * @example
-   * ```
-   *
-   * const computation1: () => Failable<number, ERROR> = ...;
-   * const computation2: (x: int) => Failable<string, ERROR> = ...;
-   * const result: Failable<string, ERROR> = computation1().flatMap(x => computation2(x))
-   * ```
-   */
-  flatMap<R2, E2 extends Error = Error>(
-    f: (r: Result) => IFailable<R2, E2>
-  ): IFailable<R2, Error | E2>;
+	/**
+	 * Chain another computation to this IFailable that
+	 * takes the result value of this IFailable and returns
+	 * a new IFailable (possibly of a different type).
+	 * The chained computation must be an IFailable whose error
+	 * type is a subset of this IFailable's error type.
+	 * If not, you can call .mapError on it to convert it's
+	 * error into a type compatible with this IFailable.
+	 *
+	 * This method allows you to chain arbitrary failable computations
+	 * dependent on the results of previous ones in the chain that
+	 * "short circuit" in case of the first error.
+	 *
+	 * @param f Function that takes the success value of this
+	 * IFailable and returns another IFailable (possibly of another
+	 * type)
+	 *
+	 * @example
+	 * ```
+	 *
+	 * const computation1: () => Failable<number, ERROR> = ...;
+	 * const computation2: (x: int) => Failable<string, ERROR> = ...;
+	 * const result: Failable<string, ERROR> = computation1().flatMap(x => computation2(x))
+	 * ```
+	 */
+	flatMap<R2, E2 extends Error = Error>(
+		f: (r: Result) => IFailableResult<R2, E2>
+	): IFailableResult<R2, Error | E2>;
 }
-
-/**
- * Discriminated union for an {@link IFailable} result.
- * value or error can be extracted from it using an
- * `if (r.isError)` check
- */
-export type IFailableResult<T, E> = {
-  isError: true;
-  error: E;
-} | {
-  isError: false;
-  value: T;
-};
 
 /**
  * Container for a value of type T. Used to distinguish expections
@@ -125,7 +92,7 @@ export type IFailableResult<T, E> = {
  * @internal
  */
 class ErrorValue<T> {
-  constructor(public readonly value: T) {}
+	constructor(public readonly value: T) {}
 }
 
 /**
@@ -134,32 +101,28 @@ class ErrorValue<T> {
  * directly. Depend on {@link IFailable} instead.
  */
 class Failure<R, E> implements IFailable<R, E> {
-  public readonly isError: true = true;
-  public readonly result: IFailableResult<R, E>;
-  constructor(public readonly error: E) {
-    this.result = {
-      isError: true,
-      error: error
-    };
-  }
+	public readonly isError: true = true
+	constructor(public readonly error: E) {
+		this.error = error
+	}
 
-  public map<R2>(_: (r: R) => R2): IFailable<R2, E> {
-    // tslint:disable-next-line:no-any
-    return <any>this;
-  }
+	public map<R2>(_: (r: R) => R2): IFailableResult<R2, E> {
+		// tslint:disable-next-line:no-any
+		return <any>this;
+	}
 
-  public mapError<E2>(func: (e: E) => E2): Failure<R, E2> {
-    return new Failure(func(this.error));
-  }
+	public mapError<E2>(func: (e: E) => E2): Failure<R, E2> {
+		return new Failure(func(this.error));
+	}
 
-  public flatMap<R2, E2 extends E = E>(_: (r: R) => IFailable<R2, E2>): IFailable<R2, E2> {
-    // tslint:disable-next-line:no-any
-    return <any>this;
-  }
+	public flatMap<R2, E2 extends E = E>(_: (r: R) => IFailableResult<R2, E2>): IFailableResult<R2, E2> {
+		// tslint:disable-next-line:no-any
+		return <any>this;
+	}
 
-  public match<T>(cases: IFailableMatchCase<T, R, E>): T {
-    return cases.failure(this.error);
-  }
+	public match<T>(cases: IFailableMatchCase<T, R, E>): T {
+		return cases.failure(this.error);
+	}
 }
 
 /**
@@ -170,17 +133,17 @@ class Failure<R, E> implements IFailable<R, E> {
  * same type.
  */
 export interface IFailableMatchCase<T, R, E> {
-  /**
-   * Callback that is run in case of failure.
-   * It is passed the error value of the result.
-   */
-  failure(e: E): T;
+	/**
+	 * Callback that is run in case of failure.
+	 * It is passed the error value of the result.
+	 */
+	failure(e: E): T;
 
-  /**
-   * Callback that is called in case of success.
-   * It is passed the success value of the result.
-   */
-  success(v: R): T;
+	/**
+	 * Callback that is called in case of success.
+	 * It is passed the success value of the result.
+	 */
+	success(v: R): T;
 }
 
 /**
@@ -189,49 +152,47 @@ export interface IFailableMatchCase<T, R, E> {
  * directly. Depend on {@link IFailable} instead.
  */
 class Success<R, E> implements IFailable<R, E> {
-  public readonly isError: false = false;
-  public readonly result: IFailableResult<R, E>;
-  constructor(public readonly value: R) {
-    this.result = {
-      isError: false,
-      value: value
-    };
-  }
+	public readonly isError: false = false;
+	constructor(public readonly value: R) {
+		this.value = value
+	}
 
-  public isFailure() {
-    return false;
-  }
+	public isFailure() {
+		return false;
+	}
 
-  public map<R2>(func: (r: R) => R2): IFailable<R2, E> {
-    return new Success(func(this.value));
-  }
+	public map<R2>(func: (r: R) => R2): IFailableResult<R2, E> {
+		return new Success(func(this.value));
+	}
 
-  public flatMap<R2, E2 extends E = E>(func: (r: R) => IFailable<R2, E2>): IFailable<R2, E2> {
-    return func(this.value).match<IFailable<R2, E2>>({
-      success: value => new Success<R2, E2>(value),
-      failure: e => new Failure<R2, E2>(e)
-    });
-  }
+	public flatMap<R2, E2 extends E = E>(func: (r: R) => IFailableResult<R2, E2>): IFailableResult<R2, E2> {
+		return func(this.value).match<IFailableResult<R2, E2>>({
+			success: value => new Success<R2, E2>(value),
+			failure: e => new Failure<R2, E2>(e)
+		});
+	}
 
-  public mapError<E2>(_: (r: E) => E2): IFailable<R, E2> {
-    // tslint:disable-next-line:no-any
-    return <any>this;
-  }
+	public mapError<E2>(_: (r: E) => E2): IFailableResult<R, E2> {
+		// tslint:disable-next-line:no-any
+		return <any>this;
+	}
 
-  public match<T>(cases: IFailableMatchCase<T, R, E>): T {
-    return cases.success(this.value);
-  }
+	public match<T>(cases: IFailableMatchCase<T, R, E>): T {
+		return cases.success(this.value);
+	}
 }
 
-export type FailablePromise<T, E> = Promise<IFailable<T, E>>;
+export type IFailableResult<R, E> = Success<R, E> | Failure<R, E>
+
+export type FailablePromise<T, E> = Promise<IFailableResult<T, E>>;
 
 export type FailableAsyncFunctionParams<T, E> = {
-  success(value: T): Promise<IFailable<T, E>>;
-  failure(error: E): Promise<IFailable<T, E>>;
-  run<R>(f: IFailable<R, E>): R;
+	success(value: T): Promise<IFailableResult<T, E>>;
+	failure(error: E): Promise<IFailableResult<T, E>>;
+	run<R>(f: IFailableResult<R, E>): R;
 };
 export type FailableAsyncArg<T, E> = (
-  (arg: FailableAsyncFunctionParams<T, E>) => Promise<IFailable<T, E>>
+	(arg: FailableAsyncFunctionParams<T, E>) => Promise<IFailableResult<T, E>>
 );
 
 /**
@@ -260,43 +221,43 @@ export type FailableAsyncArg<T, E> = (
  * ```
  */
 export function failableAsync<T, E>(
-  f: FailableAsyncArg<T, E>
-): Promise<IFailable<T, E>> {
-  return f({
-    success(value) {
-      return Promise.resolve(new Success<T, E>(value));
-    },
-    failure(e) {
-      return Promise.resolve(new Failure<T, E>(e));
-    },
-    run(result) {
-      return result.match({
-        failure: error => { throw new ErrorValue(error); },
-        success: value => value
-      });
-    }
-  })
-  .catch(e => {
-    if (e instanceof ErrorValue) {
-      return Promise.resolve(new Failure(e.value));
-    } else {
-      return Promise.reject(e);
-    }
-  });
+	f: FailableAsyncArg<T, E>
+): Promise<IFailableResult<T, E>> {
+	return f({
+		success(value) {
+			return Promise.resolve(new Success<T, E>(value));
+		},
+		failure(e) {
+			return Promise.resolve(new Failure<T, E>(e));
+		},
+		run(result) {
+			return result.match({
+				failure: error => { throw new ErrorValue(error); },
+				success: value => value
+			});
+		}
+	})
+	.catch(e => {
+		if (e instanceof ErrorValue) {
+			return Promise.resolve(new Failure(e.value) as Failure<T, E>);
+		} else {
+			return Promise.reject(e);
+		}
+	});
 }
 
 export type FailableArgParams<T, E> = {
-  /**
-   * Make IFailable<T, E> from a T
-   * @param value
-   */
-  success(value: T): IFailable<T, E>;
-  failure(error: E): IFailable<T, E>;
-  run<R>(f: IFailable<R, E>): R;
+	/**
+	 * Make IFailable<T, E> from a T
+	 * @param value
+	 */
+	success(value: T): IFailableResult<T, E>;
+	failure(error: E): IFailableResult<T, E>;
+	run<R>(f: IFailableResult<R, E>): R;
 };
 
 export type FailableArg<T, E> = (
-  (arg: FailableArgParams<T, E>) => IFailable<T, E>
+	(arg: FailableArgParams<T, E>) => IFailableResult<T, E>
 );
 
 /**
@@ -325,46 +286,46 @@ export type FailableArg<T, E> = (
  * ```
  */
 export function failable<T, E>(
-  f: FailableArg<T, E>
-): IFailable<T, E> {
-  try {
-    return f({
-      success(value) {
-        return new Success<T, E>(value);
-      },
-      failure(e) {
-        return new Failure<T, E>(e);
-      },
-      run(result) {
-        return result.match({
-          failure: error => { throw new ErrorValue(error); },
-          success: value => value
-        });
-      }
-    });
-  } catch (e) {
-    if (e instanceof ErrorValue) {
-      return new Failure(e.value);
-    } else {
-      throw e;
-    }
-  }
+	f: FailableArg<T, E>
+): IFailableResult<T, E> {
+	try {
+		return f({
+			success(value) {
+				return new Success<T, E>(value);
+			},
+			failure(e) {
+				return new Failure<T, E>(e);
+			},
+			run(result) {
+				return result.match({
+					failure: error => { throw new ErrorValue(error); },
+					success: value => value
+				});
+			}
+		});
+	} catch (e) {
+		if (e instanceof ErrorValue) {
+			return new Failure(e.value);
+		} else {
+			throw e;
+		}
+	}
 }
 
 /**
  * Create an error {@link IFailable} value.
  * @param err Error value
  */
-export function failure<T, E>(err: E): IFailable<T, E> {
-  return new Failure<T, E>(err);
+export function failure<T, E>(err: E): IFailableResult<T, E> {
+	return new Failure<T, E>(err);
 }
 
 /**
  * Create a successful {@link IFailable} value
  * @param value Result value
  */
-export function success<T, E>(value: T): IFailable<T, E> {
-  return new Success<T, E>(value);
+export function success<T, E>(value: T): IFailableResult<T, E> {
+	return new Success<T, E>(value);
 }
 
 /**
@@ -372,7 +333,7 @@ export function success<T, E>(value: T): IFailable<T, E> {
  * takes Req and returns a {@link FailablePromise}<Res, Err>.
  */
 export type AsyncFunction<
-  Req, Res, Err
+	Req, Res, Err
 > = (req: Req) => FailablePromise<Res, Err>;
 
 /**
@@ -384,31 +345,48 @@ export type AsyncFunction<
  * @returns A failable containing an array of U values wrapped inside
  * an {@link IFailable}
  */
-export function mapMultiple<T, U, E>(arr: T[], f: (t: T) => IFailable<U, E>): IFailable<U[], E> {
-  const result: U[] = [];
-  for (const item of arr) {
-    const fail = f(item);
-    if (fail.result.isError) {
-      // tslint:disable:no-any
-      return <any>fail;
-    } else {
-      result.push(fail.result.value);
-    }
-  }
+export function mapMultiple<T, U, E>(arr: ReadonlyArray<T>, f: (t: T) => IFailableResult<U, E>): IFailableResult<U[], E> {
+	const result: U[] = [];
+	for (const item of arr) {
+		const fail = f(item);
+		if (fail.isError) {
+			// since there's no way to get a value from a failure,
+			// we can just typecast the current failure and return it.
+			// tslint:disable:no-any
+			return (<any>fail).error;
+		} else {
+			result.push((<any>fail).value);
+		}
+	}
 
-  return success(result);
+	return success(result);
 }
 
 export const mapM = mapMultiple;
+
+export function isFailableException<T>(e: T): boolean {
+	return e instanceof Failure;
+}
+
+export function isSuccess(value: any): value is Success<any, any> {
+	return value instanceof Success
+}
+
+export function isFailure(value: any): value is Failure<any, any> {
+	return value instanceof Failure
+}
 
 /**
  * Object containing static functions for {@link IFailable}.
  * Anything that isn't an instance method should be added here.
  */
 export const Failable = {
-  of: success,
-  success,
-  failure,
-  mapM: mapMultiple,
-  mapMultiple
+	of: success,
+	success,
+	failure,
+	mapM: mapMultiple,
+	mapMultiple,
+	isFailableException,
+	isSuccess,
+	isFailure
 };

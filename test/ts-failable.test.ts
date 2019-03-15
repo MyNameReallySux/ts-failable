@@ -2,7 +2,7 @@
  * Test cases for failable
  */
 
-import { failable, failableAsync, failure, success, mapMultiple } from "../src/failable";
+import { failable, failableAsync, failure, success, mapMultiple, IFailable, isFailure, isSuccess } from "../src/failable";
 // tslint:disable
 import { expect } from "chai";
 
@@ -70,8 +70,8 @@ describe("failable", () => {
     expect(f3("asdf")).to.deep.equal(failure("NOT_A_NUMBER"));
     expect(f3("12")).to.deep.equal(success(12));
     const r = f3(undefined);
-    if (r.result.isError) {
-      expect(r.result.error).to.equal("NOT_FOUND");
+    if (r.isError) {
+      expect(r.error).to.equal("NOT_FOUND");
     } else {
       throw new Error("Unexpectedly reached branch");
     }
@@ -154,16 +154,18 @@ describe("mapMultiple", () => {
   it ("succeeds when all elements return success", () => {
     const validArray = [6, 7, 10, 8];
     const expectedArray = validArray.map(x => x - 5).map(x => x.toString());
-    expect(mapMultiple(validArray, f).result).to.deep.equal({
-      isError: false,
-      value: expectedArray
-    });
+    const result = mapMultiple(validArray, f)
+    if(isSuccess(result)){
+      expect(result.isError).to.be.false
+      expect(result.value).to.be.deep.equals(expectedArray)
+    }
   });
   it ("fails when one element fails", () => {
     const validArray = [6, 7, 3, 8];
-    expect(mapMultiple(validArray, f).result).to.deep.equal({
-      isError: true,
-      error: null
-    });
+    const result = mapMultiple(validArray, f)
+    if(isFailure(result)){
+      expect(result.isError).to.be.true
+      expect(result.error).to.equal(null)
+    }
   });
 });
