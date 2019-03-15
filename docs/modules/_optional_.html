@@ -89,7 +89,7 @@
 					<div class="tsd-signature tsd-kind-icon">IOptional<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">T</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in optional.ts:30</li>
+							<li>Defined in <a href="https://github.com/MyNameReallySux/ts-failable/blob/0a674e0/src/optional.ts#L45">optional.ts:45</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -104,7 +104,7 @@
 						</div>
 						<dl class="tsd-comment-tags">
 							<dt>example</dt>
-							<dd><pre><code>
+							<dd><pre><code class="lang-typescript">
 <span class="hljs-keyword">type</span> T = { x?: { y?: { z?: <span class="hljs-built_in">number</span> } } }
 
 <span class="hljs-keyword">const</span> t = Optional.make&lt;T&gt;({});
@@ -119,7 +119,22 @@
   }
 })
 <span class="hljs-built_in">console</span>.log(x.y.z.valueOf()); <span class="hljs-comment">// 10</span>
-</code></pre></dd>
+</code></pre>
+								<p>You need to extract the value at the end by calling .valueOf.
+									Obviously, you&#39;d run into problems if your type contains
+									a .valueOf property.
+									The way this type works is it makes all nullable/undefined properties
+									along the path non nullable and it turns all the &quot;leaf&quot; level properties
+									into nullable.
+									Leaf level properties are the types which are primitive
+									(string | number | boolean | symbol).
+									The so, if you have a deeply nested value .a.b.c.z: string,
+									you&#39;d access it as .a.b.c.z.valueOf(), which will give you
+									a <code>string | null</code>. It will be null in case any value along
+									the path is null/undefined.
+									Note that leaf level properties which are optional (i.e. <code>T | undefined</code>),
+								they would be converted to <code>T | null</code> by <code>.valueOf</code>.</p>
+							</dd>
 						</dl>
 					</div>
 				</section>
@@ -132,7 +147,7 @@
 					<div class="tsd-signature tsd-kind-icon">Optional<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in optional.ts:93</li>
+							<li>Defined in <a href="https://github.com/MyNameReallySux/ts-failable/blob/0a674e0/src/optional.ts#L117">optional.ts:117</a></li>
 						</ul>
 					</aside>
 					<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-object-literal tsd-has-type-parameter">
@@ -145,7 +160,7 @@
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in optional.ts:95</li>
+										<li>Defined in <a href="https://github.com/MyNameReallySux/ts-failable/blob/0a674e0/src/optional.ts#L119">optional.ts:119</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-type-parameters-title">Type parameters</h4>

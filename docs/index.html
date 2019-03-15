@@ -64,11 +64,63 @@
 				<p><a href="https://travis-ci.org/dhruvrajvanshi/ts-failable"><img src="https://travis-ci.org/dhruvrajvanshi/ts-failable.svg?branch=master" alt="Build Status"></a>
 					<a href="https://www.npmjs.com/package/ts-failable"><img src="https://badge.fury.io/js/ts-failable.svg" alt="npm version"></a>
 				<a href="https://github.com/dhruvrajvanshi/ts-failable/issues"><img src="https://img.shields.io/github/issues/dhruvrajvanshi/ts-failable.svg?branch=master" alt="Issues"></a></p>
-				<p>This is a library for type safe error handling in Typescript.
+				<p>This is a library for type safe error/null handling in Typescript.
 					If you&#39;ve ever wished for Rust&#39;s <code>Result</code> type along with
 					the syntactic sugar (<code>?</code> operator) in Typescript, you might
-				find this useful. </p>
-				<h2 id="why">Why</h2>
+				find this useful.</p>
+				<h2 id="api-docs">API Docs</h2>
+				<p><a href="https://dhruvrajvanshi.github.io/ts-failable/docs/index.html">https://dhruvrajvanshi.github.io/ts-failable/docs/index.html</a></p>
+				<h2 id="installation">Installation</h2>
+				<pre><code>npm <span class="hljs-keyword">install</span> ts-failable
+</code></pre><p>For type safe optionals, you need Typescript version &gt;= 2.8.1
+					because it uses conditional types. Also, your runtime needs to
+				support <code>Proxy</code> support, which is not supported in IE.</p>
+				<p>For IE support, there would be a less transparent version of Optional
+				in the future.</p>
+				<h2 id="optional">Optional</h2>
+				<p>Optional type is exposed which lets you access deeply nested
+				nullable properties as if each intermediate object was defined.</p>
+				<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { Optional } <span class="hljs-keyword">from</span> <span class="hljs-string">"ts-failable/optional"</span>;
+<span class="hljs-keyword">type</span> T = {
+  x?: {
+    y?: {
+      z: <span class="hljs-built_in">string</span>;
+    }
+  }
+}
+<span class="hljs-keyword">const</span> t: T = {};
+<span class="hljs-keyword">const</span> optionalT = Optional.of(t)
+<span class="hljs-built_in">console</span>.log(optionalT.x.y.z.valueOf()) <span class="hljs-comment">// null</span>
+<span class="hljs-keyword">const</span> optionalT1 = Optional.of&lt;T&gt;({
+  x: {
+    y: {
+      z: <span class="hljs-string">"asdf"</span>
+    }
+  }
+})
+<span class="hljs-built_in">console</span>.log(optionalT.x.y.z.valueOf()) <span class="hljs-comment">// asdf</span>
+</code></pre>
+				<p>So, any <code>null</code>/<code>undefined</code> value along the path short
+					circuits the evaluation. If you&#39;re familiar with Kotlin,
+				this is similar to</p>
+				<pre><code class="lang-kotlin">optionalT.x?.y?.z
+</code></pre>
+				<h3 id="caveats">Caveats</h3>
+				<ul>
+					<li>Currently, this only works on immutable objects. Mutating the
+						object might have unintended consequences. This restriction
+						will be removed in a later version. Submit a PR if you want this
+					now :)</li>
+					<li>Because it iternally uses proxy, each intermediate lookup
+						involves an extra heap lookup and a string comparison (to check
+						against &quot;valueOf&quot;) so, if you&#39;re using this in a hot loop with
+					a lot of nested keys, it will cost you.</li>
+					<li>Properties that have type <code>Something | undefined</code> are converted
+					to <code>null</code> by value of so you only have to check for <code>null</code>.</li>
+					<li>Conditional types are required so use Typescript version &gt;= 2.8.1</li>
+				</ul>
+				<h2 id="result">Result</h2>
+				<h3 id="why">Why</h3>
 				<p>In Typescript, there&#39;s no way to check the type of exceptions
 					that a function can throw at compile time. When you catch an exception,
 					you get a value of type <code>any</code>. You can encode a result type <code>Either</code>/<code>Result</code>
@@ -94,10 +146,6 @@
 </code></pre>
 				<p>Any failure in an intermediate step should short circuit the
 				whole thing.</p>
-				<h2 id="installation">Installation</h2>
-				<pre><code>npm <span class="hljs-keyword">install</span> ts-failable
-</code></pre><h2 id="api-docs">API Docs</h2>
-				<p><a href="https://dhruvrajvanshi.github.io/ts-failable/docs/index.html">https://dhruvrajvanshi.github.io/ts-failable/docs/index.html</a></p>
 				<h2 id="usage">Usage</h2>
 				<p>We&#39;ll walk through a simple function named getNumber that takes
 					an optional string and returns a number if the string is present,

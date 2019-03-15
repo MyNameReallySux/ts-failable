@@ -9,7 +9,7 @@
  * ```
  *
  * @example
- * ```
+ * ```typescript
  *
  * type T = { x?: { y?: { z?: number } } }
  *

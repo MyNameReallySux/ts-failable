@@ -8,7 +8,7 @@
     "test": "npx mocha --compilers ts:ts-node/register ./test/**/* --require spec-helper.js",
     "build": "npx tsc",
     "start": "npx tsc --watch",
-    "docs": "npx typedoc --mode modules --exclude '**/*.test.[tj]s' --module commonjs --target es5 --readme ./README.md --name ts-failable --excludePrivate --excludeExternals --excludeNotExported --out docs",
+    "docs": "npx typedoc --ignoreCompilerErrors --mode modules --exclude '**/*.test.[tj]s' --module commonjs --target es5 --readme ./README.md --name ts-failable --excludePrivate --excludeExternals --excludeNotExported --out docs",
     "clean": "rm -rf build; rm -rf docs; rm ts-failable.d.ts"
   },
   "repository": {
