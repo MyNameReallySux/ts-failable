@@ -1,13 +1,14 @@
 {
   "name": "ts-failable",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Library for type safe error handling in Typescript",
   "main": "build/ts-failable.js",
   "types": "./ts-failable.d.ts",
   "scripts": {
-    "test": "mocha --compilers ts:ts-node/register './test/**/*[tj]s'",
-    "build": "tsc",
-    "docs": "typedoc --mode modules --exclude '**/*.test.[tj]s' --module commonjs --target es5 --readme ./README.md --name ts-failable --excludePrivate --excludeExternals --excludeNotExported --out docs",
+    "test": "npx mocha --compilers ts:ts-node/register ./test/**/* --require spec-helper.js",
+    "build": "npx tsc",
+    "start": "npx tsc --watch",
+    "docs": "npx typedoc --mode modules --exclude '**/*.test.[tj]s' --module commonjs --target es5 --readme ./README.md --name ts-failable --excludePrivate --excludeExternals --excludeNotExported --out docs",
     "clean": "rm -rf build; rm -rf docs; rm ts-failable.d.ts"
   },
   "repository": {
@@ -29,16 +30,19 @@
     "@types/chai": "4.1.2",
     "@types/mocha": "2.2.48",
     "chai": "4.1.2",
-    "mocha": "5.0.4",
+    "mocha": "^5.0.4",
     "source-map": "0.7.2",
     "ts-node": "5.0.1",
     "tslint": "5.9.1",
     "tslint-language-service": "0.9.8",
     "tslint-microsoft-contrib": "5.0.3",
-    "typedoc": "0.11.1",
+    "typedoc": "^0.11.1",
     "typescript": "2.8.1"
   },
   "peerDependencies": {
     "typescript": ">=2.8.1"
+  },
+  "dependencies": {
+    "tsc": "^1.20150623.0"
   }
 }
