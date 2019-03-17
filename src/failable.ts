@@ -271,7 +271,6 @@ export type FailableArg<T, E> = (
  *
  * @example
  * ```
- *
  * const computation1: () => Failable<string, string> = ...;
  * const computation2: (x: string) => Failable<number, string> = ...;
  * const computation3 = failable<number, string>(({ run, success, failure }) => {
@@ -363,8 +362,6 @@ export function mapMultiple<T, U, E>(arr: ReadonlyArray<T>, f: (t: T) => IFailab
 	return success(result);
 }
 
-export const mapM = mapMultiple;
-
 // tslint:disable-next-line
 export function isSuccess(value: any): value is Success<any, any> {
 	return value instanceof Success;
@@ -383,7 +380,6 @@ export const Failable = {
 	of: success,
 	success,
 	failure,
-	mapM: mapMultiple,
 	mapMultiple,
 	isSuccess,
 	isFailure
