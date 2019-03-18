@@ -111,7 +111,7 @@ export class Failure<R, E> implements IFailable<R, E> {
 		return <any>this;
 	}
 
-	public mapError<E2>(func: (e: E) => E2): Failure<R, E2> {
+	public mapError<E2>(func: (e: E) => E2): IFailableResult<R, E2> {
 		return new Failure(func(this.error));
 	}
 

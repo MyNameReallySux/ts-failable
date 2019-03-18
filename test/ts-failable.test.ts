@@ -232,6 +232,17 @@ describe("mapMultiple", () => {
 // let i = 0
 // while(i <= 10){
 // 	let results = getUser(i++)
+// 	results.map(() => {
+
+// 	})
+
+// 	results.mapError(({ type }) => {
+// 		if(type === 'USER_NOT_FOUND'){
+
+// 		} else if(type ==='UNEXPECTED_ERROR'){
+
+// 		}
+// 	})
 // 	if(results.isError === false){
 // 		let { id, name, photos } = results.value
 // 		console.log(id, name, photos)
